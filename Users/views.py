@@ -106,8 +106,8 @@ class AuthAPIView(APIView):
             )
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-    
-    def patch(self, request):
+
+    def put(self, request):
         try:
             token = request.META.get('HTTP_AUTHORIZATION', False)
             if token:
@@ -117,8 +117,7 @@ class AuthAPIView(APIView):
             payload = jwt.decode(access, SECRET_KEY, algorithms=['HS256'])
             pk = payload.get('user_id')
             user = get_object_or_404(User, pk=pk)
-            serializer_class = UserSerializer(user, data=request.data, partial=True)
-        
+            serializer_class = UserSerializer(user, data=request.data)
             if serializer_class.is_valid():
                 serializer_class.save()
                 return Response(
@@ -129,7 +128,7 @@ class AuthAPIView(APIView):
                     status=status.HTTP_200_OK,
                 )
             else:
-                return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
+                return Response(status=status.HTTP_400_BAD_REQUEST)
 
         except(jwt.exceptions.ExpiredSignatureError):
             raise jwt.exceptions.InvalidTokenError
